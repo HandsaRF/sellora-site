@@ -1,16 +1,43 @@
 # Sellora Project Brief
 
-**Goal**: Build a modern, friendly, low-friction Etsy management desktop app that helps the user organize stores and listings with as little manual busy-work as possible.
+## Goal
 
-## Core Philosophy
-- **Automation-first**: Auto-derive counts, timestamps, highlight missing fields.
-- **Strict Data Integrity**: A listing belongs to exactly one store. No Notion-style chaos.
-- **Clean UI**: Sidebar navigation, high-level dashboards, no clutter, no page-builder mess.
+Build a premium, modern, store-centered Etsy operations app that is moving from a local desktop workflow into a dedicated web product.
 
-## High-Level Features
-- Main Dashboard with metrics.
-- Stores Master View (List all and add/edit).
-- Listings Backup View (Master list and add/edit).
-- Store Detail View.
+## Current Product Direction
 
-*Targeting Etsy operations workflow, replacing a chaotic Notion setup.*
+- The web app is the active direction.
+- The desktop app remains useful as a domain and data reference during migration.
+- The current desktop visual style is not the design reference for the web app.
+
+## Product Principles
+
+- **Store-centered workflow**: Stores are the main navigation object.
+- **Minimal friction**: Adding/editing stores and listings should feel fast and direct.
+- **Clear data boundaries**: A listing belongs to exactly one store.
+- **Local-first during migration**: The web app still uses local SQLite and local uploads for now.
+- **Cloud-ready architecture**: Storage and database choices should be easy to swap later.
+
+## Web MVP Scope
+
+- Dashboard
+- Stores
+- Store Workspace
+- Add/Edit Store
+- Add/Edit Listing within a store
+- Local logo upload
+
+## Explicit Web Product Rules
+
+- Do not expose `store_code` in the web product.
+- Do not build a separate global `Listings Master` page for the web MVP.
+- Listing work should live mainly inside each store workspace.
+- Follow the new dark, minimalist, glass-style design system.
+
+## Not In Scope For This Phase
+
+- Authentication and multi-user permissions
+- Cloud storage migration
+- Hosted Postgres migration
+- Profitability analytics
+- Full marketplace automation features

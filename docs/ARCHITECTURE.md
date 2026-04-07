@@ -1,17 +1,70 @@
-# Architectural Limits & Bounds
+# Architecture
 
-1. **Composition Root**: `app/main.py` acts as the explicit composition root. It initializes all Repositories, weaves them into Services, and injects the Services into `MainWindow`. `MainWindow` and UI views remain strictly presentation-focused and never construct business objects or initialize SQLite connections.
-2. **Repository Ownership**: Persistence rules, timestamping, SQL queries, and table JOIN logic exist strictly inside the `app/repositories/` models.
-3. **Dataclasses**: Python Dataclasses adapt the SQL `sqlite.Row` inputs so `QAbstractTableModel` architectures rely entirely on Python standard objects, isolating us from underlying SQLite dependencies.
-4. **Dashboard Boundary**: The Dashboard uses a distinct `DashboardRepository` and `DashboardService` to aggregate read-only metric data (`DashboardSummary`) directly via lightweight union/aggregate queries. This explicit boundary ensures dashboard analytics queries don't leak into or bog down the primary read/write operational repos (`StoreRepository`/`ListingRepository`).
-5. **Media Storage Constraints**: All file upload operations bind completely to **App Managed Local Copies** orchestrated purely via the `StorageService`. Physical assets (`logo`, `banner`, `photos`) are fetched from the user and systematically duplicated into `sellora_data/stores/{id}/` guaranteeing source-link resilience without inflating SQLite databases with binary objects.
-6. **Live Graphical Previews**: Sellora relies on PySide6's `QPixmap` containers internally bound to `QLabel` widgets to gracefully construct and display images dynamically over UI structures. Errors scaling or loading files fall back to clean "No Image" text labels entirely preventing crashes.
+## Repository Layout
 
-## Store Separation Product Architecture
-Each Store operates as a unique silo. The underlying architecture explicitly respects **Store Context** vs **Global Context**.
-- **Global Context**: Aggregates all records across all stores (e.g., "Listings Master Backup Views"). For global context, relationships mandate `JOIN` paths directly in the repository to fetch the joined `store_name`. This provides the necessary user-facing store reference instead of raw IDs.
-- **Store Context**: Features interacting tightly within a single silo. A store-specific view will leverage service paths configured to selectively pull listing histories explicitly scoped to that single store entity.
+- `app/`
+  The original desktop application built with PySide6. It still contains useful domain, repository, and service logic.
+- `web/`
+  The Next.js frontend for the new web product.
+- `web-api/`
+  The FastAPI backend used by the web app during the migration phase.
+- `docs/`
+  Product, migration, design, and handoff notes.
 
-## Delete Store Tradeoffs
-- **Current Approach**: The backend relies on SQLite `ON DELETE CASCADE`. 
-- **Behavior**: Deleting a store directly erases every listing and all history assigned to that store natively at the database layer. No orphan listings remain.
+## Current Runtime Shape
+
+### Desktop App
+
+- Entry point: `run.py`
+- Composition root: `app/main.py`
+- Data access: `app/repositories/`
+- Business logic: `app/services/`
+- Local database bootstrap: `app/database/connection.py`
+
+### Web App
+
+- Frontend: `web/`
+- Backend: `web-api/`
+- Frontend fetches from the API at `http://127.0.0.1:8000`
+- Recommended local start scripts:
+  - `start-web-dev.bat`
+  - `stop-web-dev.bat`
+
+## Data And Storage
+
+- Database: local `sellora.sqlite`
+- Local uploads: `data/uploads/`
+- Web uploads currently use a storage abstraction in `web-api/storage/`
+- The current implementation is local-first, but the abstraction is intended to support future cloud storage
+
+## Product Boundary Rules
+
+- The desktop app and web app are separate product areas.
+- Desktop UI code should not be mixed into the web UI.
+- The desktop app can still inform business logic and schema choices.
+- The web app should not inherit the desktop app visual style.
+
+## Web MVP Architecture
+
+- `web/src/app/page.tsx`
+  Dashboard
+- `web/src/app/stores/page.tsx`
+  Stores list
+- `web/src/app/stores/[id]/page.tsx`
+  Store workspace
+- `web/src/components/StoreFormDialog.tsx`
+  Add/Edit store flow
+- `web/src/components/ListingFormDialog.tsx`
+  Add/Edit listing flow
+- `web/src/components/UploadLogo.tsx`
+  Local-first logo upload flow
+- `web/src/lib/sellora.ts`
+  Shared frontend types, status appearance logic, API URL helper, flash messaging
+- `web-api/routers/stores.py`
+  Store and store-scoped listing endpoints
+
+## Important Constraints
+
+- `store_code` still exists in the SQLite schema for compatibility, but it is hidden from the web product.
+- Listings are treated as store-scoped in the web MVP.
+- A separate global web `Listings Master` page is intentionally not part of the target product.

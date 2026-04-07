@@ -1,15 +1,28 @@
-# Architectural & Technical Decisions
+# Product And Technical Decisions
 
-1. **PySide6 vs PyQt6**: Chosen constraints mandated `PySide6`. 
-2. **Dataclasses**: Simple `@dataclass` used across models. No Pydantic. 
-3. **Canonical Status Mapping**: Constants mapped in `app.core.config` combined with SQL `CHECK` arrays enforce boundaries for allowed store and listing statuses.
-4. **Dates**: Unified usage of ISO string variables preventing messy Python `datetime` parse conversions natively.
-5. **Architectural Read Paths**: 
-   - *Services:* Orchestrates requests over fetching arrays.
-   - *Repositories:* Owns SQL joining logic. To serve global Master Views, `ListingRepository` embeds an `INNER JOIN stores s` query to properly label records with user-facing store names, explicitly avoiding leaking `store_id` numbers to end-users.
-6. **ON DELETE CASCADE**: Explicitly chosen for SQLite tables to wipe listings seamlessly upon store removal natively tracking silo rules.
-7. **Composition Root Relocated**: Dependency Injection is explicitly executed inside `app/main.py`. This ensures `MainWindow` acts solely as a UI shell layout router, decoupling initialization lifetimes from GUI definitions completely.
-8. **Dashboard Query Strategy**: Aggregations for the Dashboard rely on pure distinct raw SQL `COUNT`, `SUM(CASE)`, and `UNION` operations inside the `DashboardRepository`. We actively refuse to instantiate complete Python mapping arrays for analytic reads across massive tables, ensuring maximum launch-time performance without heavy ORMs.
-9. **App-Managed Media**: To solve dynamic constraints where users arbitrarily move or delete their `Local Sources` referenced by the App, the system strictly creates independent copies into a managed sandbox: `sellora_data/`. This abstracts OS-level instability, enabling absolute control mapping media safely on ID paths instead.
-10. **Shrunk Status Nomenclature**: Listings were condensed in M11 into `Draft, Ready to Upload, Uploaded, Live, Removed` explicitly purging 'Researching' and 'Preparing', as these operations blurred the lines of an identical workspace step. `Blocked` was safely retained allowing users to suspend products strictly rather than permanently scrubbing them out as "Removed".
-11. **Relational Listing Galleries (M12)**: The legacy `main_image_path` scalar boundary was purposely deprecated in favor of a 1-to-Many generic relational table: `listing_media`. This allows dynamic arrays of exact files up to explicitly bonded limits `(Max 20 Images, Max 1 Video)` actively breaking constraints out of static UI models and pushing them precisely natively to the `ListingService`.
+## Product Decisions
+
+1. The web app is the active product direction.
+2. The current desktop visual style is not the design reference for the web app.
+3. The web app should be store-centered.
+4. `store_code` must not be shown in the web UI.
+5. A separate global web `Listings Master` page is not part of the MVP.
+6. Listing work should live mainly inside each store workspace.
+7. The visual direction is modern, premium, dark, minimalist, and glass-style.
+
+## Technical Decisions
+
+1. Keep the existing desktop app in `app/` intact while building the web app separately in `web/` and `web-api/`.
+2. Use Next.js for the web frontend.
+3. Use FastAPI for the web backend so the project can continue to reuse Python-side logic and migrate incrementally.
+4. Keep local SQLite during the current migration phase.
+5. Keep local file storage during the current migration phase, but route uploads through a storage abstraction.
+6. Use store-scoped API routes for listings in the web MVP.
+7. Use `router.refresh()` driven server rendering in the current web UI instead of adding heavier client state management too early.
+8. Use page-level flash notices and strong status badges to make saves and status state more obvious in the web app.
+
+## Operational Decisions
+
+1. The local web stack should start from the repo root using the provided `start-web-dev` scripts.
+2. Local databases, uploads, logs, `.next`, `node_modules`, and virtual environments should stay out of git.
+3. Older milestone docs are historical reference only and should not override the current web-first docs.

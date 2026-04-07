@@ -1,61 +1,64 @@
-# Progress Tracking
+# Progress
 
-## Completed Milestones
+## Desktop Baseline
 
-### Milestone 1: Pre-requisites & UI Shell
-- Defined core architecture.
-- Built main UI shell (`MainWindow`) with `QStackedWidget` routing.
-- Configured modular styling (`theme.py`).
+The original PySide6 desktop app exists and remains usable as the domain/data reference during migration.
 
-### Milestone 2: Architecture & Bound Validations
-- Bootstrapped SQLite database with `CHECK` persistence-boundary validations.
+Completed baseline areas:
 
-### Milestone 3: Model-View Master Tables
-- Added pure `QAbstractTableModel` architectures isolating UI from repository queries.
+- SQLite schema and repository/service structure
+- Desktop add/edit/delete workflows for stores and listings
+- Dashboard/service aggregation patterns
+- Local media handling and managed storage concepts
 
-### Milestone 4: Add Store & Add Listing
-- Initialized operational dialog components (`AddStoreDialog`, `AddListingDialog`).
-- Implemented inline `QLabel` field validation eliminating normal-use `QMessageBox` popups.
+## Web Migration Progress
 
-### Milestone 5: Listing Edit Workflow
-- Addressed contextual single-item modification patterns (`ListingService.get_listing` & `.update_listing`).
-- Executed `EditListingDialog` correctly natively updating localized tables.
+The web migration foundation is now established in the repo.
 
-### Milestone 6: Store Edit Workflow
-- Executed `EditStoreDialog` locking context safely into the active Silo preserving isolated operations.
+### Web Foundation Completed
 
-### Milestone 7: Safe Delete Workflows
-- **Files Modified**: 
-  - `app/repositories/listing_repository.py`
-  - `app/repositories/store_repository.py`
-  - `app/services/listing_service.py`
-  - `app/services/store_service.py`
-  - `app/ui/views/store_detail_view.py`
-  - `app/ui/windows/main_window.py`
-- **Files Created**: 
-  - `app/ui/dialogs/delete_listing_dialog.py`
-  - `app/ui/dialogs/delete_store_dialog.py`
-- Executed secure validation boundaries cleanly mapping to Service layers dynamically executing the active `ON DELETE CASCADE` backend instructions safely. 
-- Ejection sequencing from deleted stores correctly transitions layout UI away from dead cache contexts executing total reloads seamlessly upon Master tab boundaries. 
+- Added separate `web/` Next.js application
+- Added separate `web-api/` FastAPI backend
+- Connected the web backend to the current local SQLite database
+- Added local-first file storage abstraction in `web-api/storage/`
+- Added start/stop scripts for running the local web stack
 
-### Milestone 9: Media Management & Smart Dates
-- Overhauled `Store` capabilities injecting safely `banner_path` and `logo_path` via database PRAGMA operations natively preserving legacy installs.
-- Completed absolute media `[Browse...]` selectors utilizing Qt's `QFileDialog`.
-- Corrected the `ListingRepository.update()` method ensuring `files_path`, `main_image_path`, and `upload_date` successfully map back into the SQLite instances permanently.
-- Added autofill UI injection logic successfully mapping `datetime` to Uploaded statuses dynamically.
+### Current Web Product Surfaces
 
-### Milestone 10: Visibility & UX Pathing
-- Altered `StoreDetailView` creating a `QFrame` "Branding Header" explicitly displaying `logo_path` and `banner_path` variables leveraging PySide6 native `QPixmap` rendering.
-- Re-aligned UI components dropping the 'logo' title strictly for Store concepts, while Listings securely employ the 'Main Photo' terminology.
-- Linked real-time event loading updating visual previews `[Browse...]` seamlessly within `AddListingDialog` and `EditListingDialog`.
+- Dashboard page
+- Stores page
+- Store workspace page
+- Store-scoped listings table inside the workspace
+
+### Current Web Working Flows
+
+- Add store
+- Edit store
+- Add listing inside a store
+- Edit listing inside a store
+- Upload store logo
+
+### Current Web Design Progress
+
+- Dark glass-style app shell
+- Store and listing status badges with richer color treatment
+- Page-level success/error flash notices
+- Store workspace layout shaped around store-specific action and listing work
 
 ## Current Status
-### Milestone 11: Workspace UX & Managed Media Storage
-- Converted Sellora to heavily implement deep Storage Management via a clean `StorageService` strictly generating dynamic managed local folders bypassing fragile URL mapping paths.
-- Enforced a 2-Step Storage Pipeline directly hooking Create operations, pushing external files directly into `sellora_data/` explicitly tracking generated DB IDs natively avoiding file mapping clashes.
-- Wiped `Researching` and `Preparing` mapping strings natively out of the SQL instances dynamically `UPDATE`-ing the schema into `Draft`.
-- Designed robust Retrieval limits binding absolute UI export pathways explicitly enabling localized fetching properties (e.g. `[Export Store Logo]`).
-- Overhauled User visibility directly mounting massive horizontal `QPixmap` models natively stretching exact top-bounded constraints rendering Banner immersion perfectly.
 
-## Current Status
-Milestone 11 officially completed. The storage system handles autonomous sandboxing strictly mapping explicit ID limits automatically protecting media. Awaiting UI polish elements targeting glass/animations.
+Sellora is now in a real transitional state:
+
+- Desktop app still exists
+- Web app foundation exists
+- Core store and listing mutation flows are working in the web app
+- The repo is prepared for GitHub with git initialized and the first commit created
+
+## Last Verified State
+
+Verified on 2026-04-07:
+
+- `npm run lint` passes in `web/`
+- local frontend responds on `http://localhost:3005`
+- local API responds on `http://127.0.0.1:8000`
+- store update API responds successfully
