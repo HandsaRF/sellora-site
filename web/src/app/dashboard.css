@@ -1,0 +1,115 @@
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.grid-7-5 {
+  display: grid;
+  grid-template-columns: 7fr 5fr;
+  gap: 20px;
+}
+
+.grid-1 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.mt-20 { margin-top: 20px; }
+.mt-10 { margin-top: 10px; }
+.p-10 { padding: 10px; }
+
+/* Dashboard Cards */
+.kpi-card {
+  min-height: 132px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.kpi-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.kpi-value {
+  font-family: var(--font-sora), sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--accent-1);
+  margin-top: 8px;
+}
+
+.working-card {
+  padding: 20px;
+  min-height: 250px;
+}
+
+.card-title {
+  font-size: 18px;
+  color: var(--text-strong);
+  margin-bottom: 16px;
+}
+
+/* Lists */
+.attention-list, .activity-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.attention-list li, .activity-list li {
+  background: var(--surface-2);
+  padding: 12px 16px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--text-primary);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.dot.success { background: var(--success); box-shadow: 0 0 8px var(--success-soft); }
+.dot.danger { background: var(--danger); box-shadow: 0 0 8px var(--danger-soft); }
+.dot.info { background: var(--info); box-shadow: 0 0 8px var(--info-soft); }
+.dot.warning { background: var(--warning); box-shadow: 0 0 8px var(--warning-soft); }
+
+/* Tables */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  background: var(--surface-2);
+}
+
+.data-table th:first-child { border-top-left-radius: 10px; }
+.data-table th:last-child { border-top-right-radius: 10px; }
+
+.data-table td {
+  padding: 14px 16px;
+  font-size: 14px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.05);
+  color: var(--text-primary);
+}
+
+.data-table tr:hover td {
+  background: rgba(124, 198, 255, 0.04);
+}

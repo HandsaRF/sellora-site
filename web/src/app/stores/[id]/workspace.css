@@ -1,0 +1,229 @@
+.workspace-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.workspace-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.store-hero {
+  position: relative;
+  overflow: hidden;
+  min-height: 220px;
+  padding: 24px;
+}
+
+.store-hero-banner {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 120px;
+  background:
+    radial-gradient(circle at top left, rgba(124, 198, 255, 0.32), transparent 45%),
+    linear-gradient(135deg, rgba(124, 198, 255, 0.18), rgba(17, 24, 39, 0.06));
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.store-hero-content {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  padding-top: 52px;
+}
+
+.store-hero-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.store-hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.store-hero-actions {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-self: center;
+}
+
+.btn-secondary,
+.btn-ghost {
+  height: 42px;
+  border-radius: 12px;
+  padding: 0 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary {
+  background: rgba(124, 198, 255, 0.1);
+  color: var(--text-primary);
+  border: 1px solid rgba(124, 198, 255, 0.2);
+}
+
+.btn-ghost {
+  background: var(--surface-2);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+}
+
+.btn-secondary:active,
+.btn-ghost:active {
+  transform: translateY(1px);
+}
+
+.workspace-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.summary-card {
+  min-height: 124px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.summary-value {
+  font-family: var(--font-sora), sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--accent-1);
+  margin-top: 8px;
+}
+
+.summary-note {
+  margin-top: 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.workspace-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 20px;
+}
+
+.workspace-panel {
+  padding: 20px;
+}
+
+.workspace-panel h3 {
+  margin-bottom: 8px;
+}
+
+.workspace-panel p {
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.workspace-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.workspace-list li {
+  background: var(--surface-2);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.workspace-list strong {
+  display: block;
+  color: var(--text-strong);
+  margin-bottom: 4px;
+}
+
+.workspace-meta {
+  display: grid;
+  gap: 14px;
+}
+
+.workspace-meta-row {
+  display: grid;
+  gap: 6px;
+}
+
+.workspace-meta-label {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.workspace-meta-value {
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.workspace-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.workspace-table-subtitle {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.listing-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(124, 198, 255, 0.18), rgba(30, 41, 59, 0.9));
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.listing-empty {
+  padding: 28px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 1100px) {
+  .workspace-summary,
+  .workspace-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .store-hero-content {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .store-hero-actions {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 780px) {
+  .workspace-summary,
+  .workspace-grid {
+    grid-template-columns: 1fr;
+  }
+}

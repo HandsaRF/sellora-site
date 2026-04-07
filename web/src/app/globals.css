@@ -1,0 +1,112 @@
+:root {
+  /* Core background */
+  --bg-canvas-top: #0b1220;
+  --bg-canvas-bottom: #111827;
+  --bg-radial-a: rgba(78, 168, 255, 0.16);
+  --bg-radial-b: rgba(16, 185, 129, 0.08);
+
+  /* Glass shell colors */
+  --glass-panel: rgba(15, 23, 42, 0.60);
+  --glass-panel-strong: rgba(15, 23, 42, 0.74);
+  --glass-border: rgba(148, 163, 184, 0.18);
+  --glass-highlight: rgba(255, 255, 255, 0.06);
+
+  /* Solid working surfaces */
+  --surface-1: #111827;
+  --surface-2: #172033;
+  --surface-3: #1e293b;
+  --surface-hover: #22304a;
+
+  /* Text colors */
+  --text-strong: #e5eefb;
+  --text-primary: #d4deee;
+  --text-secondary: #9fb0c7;
+  --text-muted: #73839d;
+  --text-on-accent: #08111f;
+
+  /* Accent colors */
+  --accent-1: #7cc6ff;
+  --accent-2: #4ea8ff;
+  --accent-3: #2b7fff;
+  --accent-soft: rgba(124, 198, 255, 0.18);
+
+  /* Semantic colors */
+  --success: #34d399;
+  --success-soft: rgba(52, 211, 153, 0.16);
+  --warning: #f59e0b;
+  --warning-soft: rgba(245, 158, 11, 0.16);
+  --danger: #f87171;
+  --danger-soft: rgba(248, 113, 113, 0.16);
+  --info: #60a5fa;
+  --info-soft: rgba(96, 165, 250, 0.16);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: linear-gradient(180deg, var(--bg-canvas-top), var(--bg-canvas-bottom)), #0b1220;
+  background-attachment: fixed;
+  color: var(--text-primary);
+  font-family: var(--font-manrope), sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sora), sans-serif;
+  color: var(--text-strong);
+  font-weight: 600;
+}
+
+a {
+  color: var(--accent-1);
+  text-decoration: none;
+}
+
+/* Base Glass Shell Utilities */
+.glass-panel {
+  background: var(--glass-panel);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px); /* Safari support */
+  border-radius: 20px;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.28), inset 0 1px 0 var(--glass-highlight);
+}
+
+/* Subtle Glass Card */
+.glass-card {
+  background: var(--glass-panel);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 18px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.table-surface {
+  background: var(--surface-1);
+  border-radius: 16px;
+}
+
+/* Base layout utilities */
+.page-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.content-inner {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
