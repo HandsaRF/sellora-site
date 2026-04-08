@@ -10,9 +10,21 @@ $apiStderr = Join-Path $apiDir "codex-api-stderr.log"
 $webStdout = Join-Path $webDir ".next\manual-web-stdout.log"
 $webStderr = Join-Path $webDir ".next\manual-web-stderr.log"
 
+if (Test-Path (Join-Path $projectRoot "stop-web-dev.ps1")) {
+  & (Join-Path $projectRoot "stop-web-dev.ps1") | Out-Null
+}
+
 Write-Host "Starting Sellora web API on http://127.0.0.1:8000 ..."
+$apiArgs = @(
+  "main:app",
+  "--host", "127.0.0.1",
+  "--port", "8000",
+  "--reload",
+  "--reload-dir", ".",
+  "--reload-dir", "..\app"
+)
 Start-Process -FilePath $uvicornExe `
-  -ArgumentList "main:app", "--host", "127.0.0.1", "--port", "8000", "--reload", "--reload-dir", $apiDir, "--reload-dir", $appDir `
+  -ArgumentList $apiArgs `
   -WorkingDirectory $apiDir `
   -RedirectStandardOutput $apiStdout `
   -RedirectStandardError $apiStderr

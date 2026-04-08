@@ -10,15 +10,19 @@ This folder mixes current source-of-truth docs and older milestone history. If a
 4. `PROGRESS.md`
 5. `FAILURES.md`
 6. `NEXT_STEPS.md`
-7. `HANDOFF.md`
+7. `GMAIL_FIRST_SALES_WORKSPACE_PLAN.md`
+8. `GMAIL_PARSER_LAB_PLAN.md`
+9. `HANDOFF.md`
 
 ## Design And Migration References
 
 - `WEB_MIGRATION_PLAN.md`
 - `WEB_STYLE_RESEARCH.md`
 - `SELLORA_WEB_UI_BRIEF.md`
+- `GMAIL_FIRST_SALES_WORKSPACE_PLAN.md`
+- `GMAIL_PARSER_LAB_PLAN.md`
 
-These three files define the intended web direction, styling, and migration shape.
+These files define the intended web direction, styling, migration shape, the Gmail-first sales workspace plan, and the separate Gmail parser lab direction.
 
 ## Historical Or Operational References
 
@@ -45,3 +49,21 @@ To stop both:
 ```powershell
 .\stop-web-dev.bat
 ```
+
+## Gmail Lab Local Setup
+
+The separate Gmail lab now supports real Google OAuth in addition to manual `.eml` parsing.
+
+Local env file:
+
+- `web/.env.local`
+
+Required values:
+
+- `GOOGLE_OAUTH_CLIENT_ID`
+- `GOOGLE_OAUTH_CLIENT_SECRET`
+- `GOOGLE_OAUTH_REDIRECT_URI`
+
+Recommended redirect URI:
+
+- `http://localhost:3005/api/gmail-lab/oauth/callback`

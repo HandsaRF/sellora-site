@@ -2,28 +2,42 @@
 
 ## Priority 1
 
-- Build banner upload in the store workspace
-- Add listing main-image upload flow
-- Improve loading, empty, and API-offline states
-- Replace placeholder search/filter UI with real behavior on the Stores page
+- Connect Gmail-lab output to the Sellora store transaction model carefully
+- Decide how real Gmail sale events become store purchase transactions
+- Keep `processing` emails outside income/profit
+- Keep `refund completed` reducing finance
+- Keep `refund issue` as alert-only
+- Add a clean import/review step between the Gmail lab and the store workspace
 
 ## Priority 2
 
-- Continue polishing the store workspace so it feels like the primary operating surface
-- Improve dashboard usefulness with better real-world signals, not just placeholder density
-- Tighten create/edit UX with better inline validation and post-save transitions
+- Expand the store workspace review flow around:
+  - unmatched Gmail transactions
+  - missing shipping cost
+  - confidence review
+  - import approval
+- Improve empty/loading/offline states around the new workspace flow
+- Add clearer transaction summaries in the Financial Overview and Sales Ledger
 
 ## Priority 3
 
-- Start the cloud-readiness transition from local-only storage toward hosted storage
-- Choose the first hosted target:
-  - easiest path: Supabase
-  - lower-cost flexible path: Neon + Cloudflare R2
-- Prepare a clean data/storage migration path away from local SQLite
+- Keep growing the separate Gmail parser lab first
+- Validate the parser against more real Etsy emails and more refund variants
+- Improve refund linking for orders with more than one item
+- Improve parser confidence rules and duplicate handling
+- Keep main Sellora Gmail UI minimal until the lab parser is proven over more history
+
+## Later Expansion
+
+- Etsy CSV reconciliation
+- EPROLO API integration if access is granted
+- Etsy API integration if approval clears
+- Bank payout reconciliation in ILS
+- Cloud storage migration after the workspace flow is stable
 
 ## Explicitly Not Urgent Yet
 
 - Authentication
 - Team/multi-user support
-- Profit analytics
+- Final accounting-grade finance
 - Advanced automation features

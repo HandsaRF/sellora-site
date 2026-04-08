@@ -2,13 +2,15 @@ import { CSSProperties } from "react";
 
 import styles from "./StatusBadge.module.css";
 import {
+  getGmailStatusAppearance,
   getListingStatusAppearance,
   getStoreStatusAppearance,
+  getTransactionStatusAppearance,
 } from "@/lib/sellora";
 
 type StatusBadgeProps = {
   status: string;
-  category: "store" | "listing";
+  category: "store" | "listing" | "transaction" | "gmail";
   size?: "default" | "compact";
   className?: string;
 };
@@ -31,7 +33,11 @@ export function StatusBadge({
   const appearance =
     category === "store"
       ? getStoreStatusAppearance(status)
-      : getListingStatusAppearance(status);
+      : category === "listing"
+        ? getListingStatusAppearance(status)
+        : category === "transaction"
+          ? getTransactionStatusAppearance(status)
+          : getGmailStatusAppearance(status);
 
   const style: StatusStyle = {
     "--status-background": appearance.background,

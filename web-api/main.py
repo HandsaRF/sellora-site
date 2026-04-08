@@ -4,6 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import sys
 from pathlib import Path
 
+from database import ensure_web_tables
+
 # Add project root to sys.path to reuse app database code later
 project_root = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_root))
@@ -27,6 +29,11 @@ app.include_router(dashboard.router)
 uploads_dir = project_root / "data" / "uploads"
 uploads_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(uploads_dir)), name="static")
+
+
+@app.on_event("startup")
+def startup():
+    ensure_web_tables()
 
 @app.get("/")
 def read_root():

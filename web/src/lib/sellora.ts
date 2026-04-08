@@ -17,6 +17,14 @@ export const LISTING_STATUS_OPTIONS = [
 
 export type StoreStatus = (typeof STORE_STATUS_OPTIONS)[number];
 export type ListingStatus = (typeof LISTING_STATUS_OPTIONS)[number];
+export const GMAIL_CONNECTION_STATUS_OPTIONS = [
+  "Not Connected",
+  "Connected",
+  "Needs Attention",
+  "Sync Paused",
+] as const;
+
+export type GmailConnectionStatus = (typeof GMAIL_CONNECTION_STATUS_OPTIONS)[number];
 
 export type StoreRecord = {
   id: number;
@@ -41,6 +49,50 @@ export type ListingRecord = {
   upload_date?: string | null;
   sku?: string | null;
   main_image_path?: string | null;
+  description?: string | null;
+  title_aliases?: string[] | null;
+  tags?: string[] | null;
+  style_options?: string[] | null;
+  supplier_link?: string | null;
+  supplier_notes?: string | null;
+  base_product_cost_usd?: number | null;
+  style_cost_overrides?: Record<string, number> | null;
+  expected_profit_target_usd?: number | null;
+  expected_margin_target_pct?: number | null;
+  extra_cost_usd?: number | null;
+};
+
+export type PurchaseTransactionRecord = {
+  id: number;
+  store_id: number;
+  matched_listing_id?: number | null;
+  matched_listing_name?: string | null;
+  source_type: "dummy" | "gmail";
+  transaction_id: string;
+  listing_title: string;
+  style?: string | null;
+  quantity: number;
+  subtotal_usd: number;
+  product_cost_snapshot_usd?: number | null;
+  supplier_shipping_cost_usd?: number | null;
+  estimated_fees_usd?: number | null;
+  extra_cost_usd?: number | null;
+  estimated_profit_usd?: number | null;
+  confidence_state: string;
+  event_date?: string | null;
+  review_notes?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+export type GmailConnectionRecord = {
+  store_id: number;
+  gmail_account_email?: string | null;
+  connection_status: GmailConnectionStatus;
+  inbox_label?: string | null;
+  sync_notes?: string | null;
+  last_synced_at?: string | null;
+  updated_at?: string | null;
 };
 
 const DEFAULT_API_BASE_URL = "http://127.0.0.1:8000";
@@ -175,6 +227,110 @@ const LISTING_STATUS_APPEARANCES: Record<string, StatusAppearance> = {
   },
 };
 
+const TRANSACTION_STATUS_APPEARANCES: Record<string, StatusAppearance> = {
+  Dummy: {
+    background: "linear-gradient(135deg, rgba(124, 198, 255, 0.16), rgba(15, 23, 42, 0.82))",
+    border: "rgba(124, 198, 255, 0.22)",
+    text: "#e3f4ff",
+    dot: "#7cc6ff",
+    glow: "rgba(124, 198, 255, 0.38)",
+    shadow: "rgba(37, 99, 235, 0.18)",
+  },
+  Gmail: {
+    background: "linear-gradient(135deg, rgba(192, 132, 252, 0.18), rgba(24, 24, 49, 0.82))",
+    border: "rgba(192, 132, 252, 0.24)",
+    text: "#f3e8ff",
+    dot: "#c084fc",
+    glow: "rgba(192, 132, 252, 0.34)",
+    shadow: "rgba(107, 33, 168, 0.16)",
+  },
+  Parsed: {
+    background: "linear-gradient(135deg, rgba(96, 165, 250, 0.18), rgba(22, 33, 55, 0.82))",
+    border: "rgba(96, 165, 250, 0.24)",
+    text: "#dcedff",
+    dot: "#60a5fa",
+    glow: "rgba(96, 165, 250, 0.36)",
+    shadow: "rgba(37, 99, 235, 0.18)",
+  },
+  Matched: {
+    background: "linear-gradient(135deg, rgba(56, 189, 248, 0.18), rgba(14, 30, 46, 0.82))",
+    border: "rgba(56, 189, 248, 0.24)",
+    text: "#e0fbff",
+    dot: "#38bdf8",
+    glow: "rgba(56, 189, 248, 0.34)",
+    shadow: "rgba(3, 105, 161, 0.16)",
+  },
+  "Needs Review": {
+    background: "linear-gradient(135deg, rgba(248, 113, 113, 0.2), rgba(33, 14, 20, 0.82))",
+    border: "rgba(248, 113, 113, 0.28)",
+    text: "#ffe2e2",
+    dot: "#f87171",
+    glow: "rgba(248, 113, 113, 0.36)",
+    shadow: "rgba(127, 29, 29, 0.18)",
+  },
+  "Missing Shipping Cost": {
+    background: "linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(45, 26, 10, 0.82))",
+    border: "rgba(245, 158, 11, 0.28)",
+    text: "#fff0cf",
+    dot: "#f59e0b",
+    glow: "rgba(245, 158, 11, 0.36)",
+    shadow: "rgba(120, 53, 15, 0.18)",
+  },
+  Estimated: {
+    background: "linear-gradient(135deg, rgba(52, 211, 153, 0.2), rgba(15, 23, 42, 0.82))",
+    border: "rgba(52, 211, 153, 0.28)",
+    text: "#defdf0",
+    dot: "#34d399",
+    glow: "rgba(52, 211, 153, 0.38)",
+    shadow: "rgba(6, 95, 70, 0.18)",
+    pulse: true,
+  },
+  Reconciled: {
+    background: "linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(10, 30, 24, 0.84))",
+    border: "rgba(16, 185, 129, 0.28)",
+    text: "#dcfce7",
+    dot: "#10b981",
+    glow: "rgba(16, 185, 129, 0.38)",
+    shadow: "rgba(6, 78, 59, 0.18)",
+  },
+};
+
+const GMAIL_STATUS_APPEARANCES: Record<string, StatusAppearance> = {
+  "Not Connected": {
+    background: "linear-gradient(135deg, rgba(100, 116, 139, 0.12), rgba(15, 23, 42, 0.76))",
+    border: "rgba(148, 163, 184, 0.18)",
+    text: "#d9e4f3",
+    dot: "#94a3b8",
+    glow: "rgba(148, 163, 184, 0.28)",
+    shadow: "rgba(15, 23, 42, 0.24)",
+  },
+  Connected: {
+    background: "linear-gradient(135deg, rgba(52, 211, 153, 0.2), rgba(15, 23, 42, 0.82))",
+    border: "rgba(52, 211, 153, 0.28)",
+    text: "#defdf0",
+    dot: "#34d399",
+    glow: "rgba(52, 211, 153, 0.38)",
+    shadow: "rgba(6, 95, 70, 0.18)",
+    pulse: true,
+  },
+  "Needs Attention": {
+    background: "linear-gradient(135deg, rgba(248, 113, 113, 0.2), rgba(33, 14, 20, 0.82))",
+    border: "rgba(248, 113, 113, 0.28)",
+    text: "#ffe2e2",
+    dot: "#f87171",
+    glow: "rgba(248, 113, 113, 0.36)",
+    shadow: "rgba(127, 29, 29, 0.18)",
+  },
+  "Sync Paused": {
+    background: "linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(45, 26, 10, 0.82))",
+    border: "rgba(245, 158, 11, 0.28)",
+    text: "#fff0cf",
+    dot: "#f59e0b",
+    glow: "rgba(245, 158, 11, 0.36)",
+    shadow: "rgba(120, 53, 15, 0.18)",
+  },
+};
+
 const FLASH_STORAGE_KEY = "sellora.flash";
 export const FLASH_EVENT_NAME = "sellora:flash";
 
@@ -188,6 +344,48 @@ export function getStoreStatusAppearance(status: string) {
 
 export function getListingStatusAppearance(status: string) {
   return LISTING_STATUS_APPEARANCES[status] ?? DEFAULT_STATUS_APPEARANCE;
+}
+
+export function getTransactionStatusAppearance(status: string) {
+  return TRANSACTION_STATUS_APPEARANCES[status] ?? DEFAULT_STATUS_APPEARANCE;
+}
+
+export function getGmailStatusAppearance(status: string) {
+  return GMAIL_STATUS_APPEARANCES[status] ?? DEFAULT_STATUS_APPEARANCE;
+}
+
+export function formatUsd(value?: number | null) {
+  if (value === null || value === undefined || Number.isNaN(value)) {
+    return "-";
+  }
+
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+export function resolveListingProductCost(
+  listing?: ListingRecord | null,
+  style?: string | null,
+) {
+  if (!listing) {
+    return null;
+  }
+
+  const normalizedStyle = style?.trim();
+
+  if (
+    normalizedStyle &&
+    listing.style_cost_overrides &&
+    typeof listing.style_cost_overrides[normalizedStyle] === "number"
+  ) {
+    return listing.style_cost_overrides[normalizedStyle];
+  }
+
+  return listing.base_product_cost_usd ?? null;
 }
 
 export function publishFlash(notice: FlashNotice) {

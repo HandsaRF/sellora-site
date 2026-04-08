@@ -1,3 +1,4 @@
+import sqlite3
 from datetime import datetime
 import re
 
@@ -28,6 +29,21 @@ class ListingPayload(BaseModel):
     sku: str | None = None
 
 
+class DummyTransactionPayload(BaseModel):
+    matched_listing_id: int | None = None
+    listing_title: str
+    style: str | None = None
+    transaction_id: str
+    quantity: int = 1
+    subtotal_usd: float
+    product_cost_snapshot_usd: float | None = None
+    supplier_shipping_cost_usd: float | None = None
+    estimated_fees_usd: float | None = None
+    extra_cost_usd: float | None = None
+    event_date: str | None = None
+    review_notes: str | None = None
+
+
 def _clean_optional(value: str | None) -> str | None:
     if value is None:
         return None
@@ -42,6 +58,10 @@ def _serialize_store(row):
 
 
 def _serialize_listing(row):
+    return dict(row)
+
+
+def _serialize_transaction(row):
     return dict(row)
 
 
@@ -100,6 +120,90 @@ def _validate_listing_payload(payload: ListingPayload):
         "status": payload.status,
         "upload_date": upload_date,
         "sku": _clean_optional(payload.sku),
+    }
+
+
+def _coerce_optional_number(value: float | None, field_name: str) -> float | None:
+    if value is None:
+        return None
+    if value < 0:
+        raise HTTPException(status_code=400, detail=f"{field_name} cannot be negative.")
+    return round(float(value), 2)
+
+
+def _calculate_estimated_profit(
+    subtotal_usd: float,
+    product_cost_snapshot_usd: float | None,
+    supplier_shipping_cost_usd: float | None,
+    estimated_fees_usd: float | None,
+    extra_cost_usd: float | None,
+) -> float:
+    total_cost = sum(
+        value or 0
+        for value in (
+            product_cost_snapshot_usd,
+            supplier_shipping_cost_usd,
+            estimated_fees_usd,
+            extra_cost_usd,
+        )
+    )
+    return round(subtotal_usd - total_cost, 2)
+
+
+def _derive_transaction_confidence(matched_listing_id: int | None, supplier_shipping_cost_usd: float | None):
+    if not matched_listing_id:
+        return "Needs Review"
+    if supplier_shipping_cost_usd is None:
+        return "Missing Shipping Cost"
+    return "Estimated"
+
+
+def _validate_dummy_transaction_payload(payload: DummyTransactionPayload):
+    listing_title = payload.listing_title.strip()
+    transaction_id = payload.transaction_id.strip()
+    style = _clean_optional(payload.style)
+    review_notes = _clean_optional(payload.review_notes)
+    event_date = _clean_optional(payload.event_date)
+
+    if not listing_title:
+        raise HTTPException(status_code=400, detail="Listing title is required.")
+    if not transaction_id:
+        raise HTTPException(status_code=400, detail="Transaction ID is required.")
+    if payload.quantity < 1:
+        raise HTTPException(status_code=400, detail="Quantity must be at least 1.")
+    if payload.subtotal_usd < 0:
+        raise HTTPException(status_code=400, detail="Subtotal cannot be negative.")
+
+    product_cost_snapshot_usd = _coerce_optional_number(payload.product_cost_snapshot_usd, "Product cost")
+    supplier_shipping_cost_usd = _coerce_optional_number(payload.supplier_shipping_cost_usd, "Shipping cost")
+    estimated_fees_usd = _coerce_optional_number(payload.estimated_fees_usd, "Estimated fees")
+    extra_cost_usd = _coerce_optional_number(payload.extra_cost_usd, "Extra cost")
+    subtotal_usd = round(float(payload.subtotal_usd), 2)
+
+    return {
+        "matched_listing_id": payload.matched_listing_id,
+        "listing_title": listing_title,
+        "style": style,
+        "transaction_id": transaction_id,
+        "quantity": payload.quantity,
+        "subtotal_usd": subtotal_usd,
+        "product_cost_snapshot_usd": product_cost_snapshot_usd,
+        "supplier_shipping_cost_usd": supplier_shipping_cost_usd,
+        "estimated_fees_usd": estimated_fees_usd,
+        "extra_cost_usd": extra_cost_usd,
+        "event_date": event_date or datetime.now().strftime("%Y-%m-%d"),
+        "review_notes": review_notes,
+        "estimated_profit_usd": _calculate_estimated_profit(
+            subtotal_usd,
+            product_cost_snapshot_usd,
+            supplier_shipping_cost_usd,
+            estimated_fees_usd,
+            extra_cost_usd,
+        ),
+        "confidence_state": _derive_transaction_confidence(
+            payload.matched_listing_id,
+            supplier_shipping_cost_usd,
+        ),
     }
 
 
@@ -225,6 +329,198 @@ def get_store_listings(store_id: int):
             (store_id,),
         )
         return [_serialize_listing(row) for row in cursor.fetchall()]
+
+
+@router.get("/{store_id}/transactions")
+def get_store_transactions(store_id: int):
+    with db_session() as conn:
+        cursor = conn.execute("SELECT id FROM stores WHERE id = ?", (store_id,))
+        if not cursor.fetchone():
+            raise HTTPException(status_code=404, detail="Store not found")
+
+        rows = conn.execute(
+            """
+            SELECT pt.*,
+                   l.product_name AS matched_listing_name
+            FROM purchase_transactions pt
+            LEFT JOIN listings l ON l.id = pt.matched_listing_id
+            WHERE pt.store_id = ?
+            ORDER BY COALESCE(pt.event_date, pt.created_at) DESC, pt.id DESC
+            """,
+            (store_id,),
+        ).fetchall()
+
+    return [_serialize_transaction(row) for row in rows]
+
+
+@router.post("/{store_id}/transactions/dummy")
+def create_dummy_transaction(store_id: int, payload: DummyTransactionPayload):
+    values = _validate_dummy_transaction_payload(payload)
+    now = datetime.now().isoformat()
+
+    with db_session() as conn:
+        store_cursor = conn.execute("SELECT id FROM stores WHERE id = ?", (store_id,))
+        if not store_cursor.fetchone():
+            raise HTTPException(status_code=404, detail="Store not found")
+
+        if values["matched_listing_id"] is not None:
+            listing_row = conn.execute(
+                "SELECT id FROM listings WHERE id = ? AND store_id = ?",
+                (values["matched_listing_id"], store_id),
+            ).fetchone()
+            if not listing_row:
+                raise HTTPException(status_code=400, detail="Matched listing does not belong to this store.")
+
+        try:
+            cursor = conn.execute(
+                """
+                INSERT INTO purchase_transactions (
+                    store_id,
+                    matched_listing_id,
+                    source_type,
+                    transaction_id,
+                    listing_title,
+                    style,
+                    quantity,
+                    subtotal_usd,
+                    product_cost_snapshot_usd,
+                    supplier_shipping_cost_usd,
+                    estimated_fees_usd,
+                    extra_cost_usd,
+                    estimated_profit_usd,
+                    confidence_state,
+                    event_date,
+                    review_notes,
+                    created_at,
+                    updated_at
+                )
+                VALUES (?, ?, 'dummy', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    store_id,
+                    values["matched_listing_id"],
+                    values["transaction_id"],
+                    values["listing_title"],
+                    values["style"],
+                    values["quantity"],
+                    values["subtotal_usd"],
+                    values["product_cost_snapshot_usd"],
+                    values["supplier_shipping_cost_usd"],
+                    values["estimated_fees_usd"],
+                    values["extra_cost_usd"],
+                    values["estimated_profit_usd"],
+                    values["confidence_state"],
+                    values["event_date"],
+                    values["review_notes"],
+                    now,
+                    now,
+                ),
+            )
+        except sqlite3.IntegrityError as exc:
+            if "UNIQUE constraint failed: purchase_transactions.store_id, purchase_transactions.transaction_id" in str(exc):
+                raise HTTPException(
+                    status_code=400,
+                    detail="This store already has a transaction with the same transaction ID.",
+                ) from exc
+            raise
+
+        transaction_id = cursor.lastrowid
+        row = conn.execute(
+            """
+            SELECT pt.*,
+                   l.product_name AS matched_listing_name
+            FROM purchase_transactions pt
+            LEFT JOIN listings l ON l.id = pt.matched_listing_id
+            WHERE pt.id = ? AND pt.store_id = ?
+            """,
+            (transaction_id, store_id),
+        ).fetchone()
+
+    return _serialize_transaction(row)
+
+
+@router.put("/{store_id}/transactions/{transaction_row_id}")
+def update_store_transaction(store_id: int, transaction_row_id: int, payload: DummyTransactionPayload):
+    values = _validate_dummy_transaction_payload(payload)
+    now = datetime.now().isoformat()
+
+    with db_session() as conn:
+        row = conn.execute(
+            "SELECT id FROM purchase_transactions WHERE id = ? AND store_id = ?",
+            (transaction_row_id, store_id),
+        ).fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Transaction not found")
+
+        if values["matched_listing_id"] is not None:
+            listing_row = conn.execute(
+                "SELECT id FROM listings WHERE id = ? AND store_id = ?",
+                (values["matched_listing_id"], store_id),
+            ).fetchone()
+            if not listing_row:
+                raise HTTPException(status_code=400, detail="Matched listing does not belong to this store.")
+
+        try:
+            conn.execute(
+                """
+                UPDATE purchase_transactions
+                SET matched_listing_id = ?,
+                    transaction_id = ?,
+                    listing_title = ?,
+                    style = ?,
+                    quantity = ?,
+                    subtotal_usd = ?,
+                    product_cost_snapshot_usd = ?,
+                    supplier_shipping_cost_usd = ?,
+                    estimated_fees_usd = ?,
+                    extra_cost_usd = ?,
+                    estimated_profit_usd = ?,
+                    confidence_state = ?,
+                    event_date = ?,
+                    review_notes = ?,
+                    updated_at = ?
+                WHERE id = ? AND store_id = ?
+                """,
+                (
+                    values["matched_listing_id"],
+                    values["transaction_id"],
+                    values["listing_title"],
+                    values["style"],
+                    values["quantity"],
+                    values["subtotal_usd"],
+                    values["product_cost_snapshot_usd"],
+                    values["supplier_shipping_cost_usd"],
+                    values["estimated_fees_usd"],
+                    values["extra_cost_usd"],
+                    values["estimated_profit_usd"],
+                    values["confidence_state"],
+                    values["event_date"],
+                    values["review_notes"],
+                    now,
+                    transaction_row_id,
+                    store_id,
+                ),
+            )
+        except sqlite3.IntegrityError as exc:
+            if "UNIQUE constraint failed: purchase_transactions.store_id, purchase_transactions.transaction_id" in str(exc):
+                raise HTTPException(
+                    status_code=400,
+                    detail="This store already has a transaction with the same transaction ID.",
+                ) from exc
+            raise
+
+        updated_row = conn.execute(
+            """
+            SELECT pt.*,
+                   l.product_name AS matched_listing_name
+            FROM purchase_transactions pt
+            LEFT JOIN listings l ON l.id = pt.matched_listing_id
+            WHERE pt.id = ? AND pt.store_id = ?
+            """,
+            (transaction_row_id, store_id),
+        ).fetchone()
+
+    return _serialize_transaction(updated_row)
 
 
 @router.post("/{store_id}/listings")

@@ -21,6 +21,12 @@
 - **Web scope drift**
   The early web foundation still included a separate listings page and visible store-code thinking. The current web app was corrected to stay store-centered and hide `store_code`.
 
+- **Gmail lab storefront parsing confusion**
+  Early parser runs could confuse the storefront with the seller/owner name. The parser was corrected to separate storefront detection from seller-name detection.
+
+- **Gmail lab small sync cap**
+  Early Gmail sync only fetched a very small single-page batch. The lab now paginates across Gmail results and syncs a much larger Etsy message history.
+
 ## Current Known Gaps
 
 - **Banner upload is not built yet**
@@ -40,6 +46,9 @@
 
 - **Cloud storage is not integrated yet**
   Uploads still land in local storage during this phase.
+
+- **Gmail lab still needs more edge-case validation**
+  The parser is now connected to real Gmail, but it still needs more testing across additional Etsy email variations before it should auto-import directly into the store workspace.
 
 ## Documentation Risk
 

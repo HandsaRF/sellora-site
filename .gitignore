@@ -16,11 +16,14 @@ ENV/
 # Local app and upload data
 sellora_data/
 data/uploads/
+data/*.json
 
 # Web build and package folders
 web/node_modules/
 web/.next/
 web/out/
+web/.env.local
+web/.env.*.local
 
 # Logs
 *.log

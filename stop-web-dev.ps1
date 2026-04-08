@@ -20,7 +20,12 @@ foreach ($port in $ports) {
       Stop-Process -Id ([int]$processId) -Force -ErrorAction Stop
       Write-Host "Stopped PID $processId on port $port"
     } catch {
-      Write-Host "Could not stop PID $processId on port $port"
+      try {
+        taskkill /PID $processId /F | Out-Null
+        Write-Host "Stopped PID $processId on port $port"
+      } catch {
+        Write-Host "Could not stop PID $processId on port $port"
+      }
     }
   }
 }

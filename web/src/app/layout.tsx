@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Sora, Manrope } from "next/font/google";
 import "./globals.css";
-import { Sidebar } from "@/components/layout/sidebar";
-import { Header } from "@/components/layout/header";
+import { AppChrome } from "@/components/layout/AppChrome";
 
 const sora = Sora({
   variable: "--font-sora",
@@ -27,13 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${sora.variable} ${manrope.variable}`}>
       <body>
-        <div className="page-container">
-          <Sidebar />
-          <div className="main-content">
-            <Header />
-            <main className="content-inner">{children}</main>
-          </div>
-        </div>
+        <AppChrome>{children}</AppChrome>
       </body>
     </html>
   );
